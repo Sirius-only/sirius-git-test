@@ -1,0 +1,565 @@
+<template>
+    <div class="dashboard-container">
+        <div class="dashboardInfo">
+            <h2 class="dashboardInfoTitle" v-if="isShow1">统一源代码质量检测平台[研发网]</h2>
+            
+        </div>
+        <!-- <span>严重 #DB2828</span>
+    <span>主要 #4a90e2</span>
+    <span>次要 #00B5AD</span>
+    <span>不重要 #21BA45</span>
+    <span>无优先级 #EFEFEF;</span>-->
+        <!-- <div class="seriousness"></div>严重
+    <div class="main"></div>主要
+    <div class="minor"></div>次要
+    <div class="unimportance"></div>不重要
+    <div class="nopriority"></div>无优先级-->
+        <div class="taskWarp" v-if="isShow1">
+            <el-card v-loading="loading" class="task">
+                <div class="taskTitle">
+                    <div>
+                        我的待办任务
+                        <div class="tag">{{ issuesLists }}</div>
+                    </div>
+                    <div class="viewMore">
+                        <span @click="seeMore">查看更多>></span>
+                    </div>
+                </div>
+                <div class="nodata" v-if="backlogTaskLists.length == 0">
+                    暂无数据
+                </div>
+                <div v-else>
+                    <div
+                        class="taskItem"
+                        v-for="(item, index) in backlogTaskLists"
+                        :key="index"
+                    >
+                        <div @click="enterDetail(item.htmlUrl)">
+                            <div class="taskItemTitle">
+                                <div>
+                                    <div class="number">{{ index + 1 }}</div>
+                                    <!-- <div class="circle"></div> -->
+                                    <div class="taskItemName">
+                                        {{ item.title }}
+                                        <span>[{{ item.issueType }}]</span>
+                                    </div>
+                                </div>
+                                <div>{{ item.createdAt }}</div>
+                            </div>
+                            <div class="taskInfo">
+                                <span
+                                    class="taskInfoItem"
+                                    v-if="item.user == null || item.user == ''"
+                                >
+                                    创建人:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    创建人:{{ item.user.name }}
+                                </span>
+                                <span
+                                    class="taskInfoItem"
+                                    v-if="
+                                        item.assignee == null ||
+                                        item.assignee == ''
+                                    "
+                                >
+                                    负责人:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    负责人:{{ item.assignee.name }}
+                                </span>
+                                <span
+                                    class="taskInfoItem"
+                                    v-if="
+                                        item.program == null ||
+                                        item.program == ''
+                                    "
+                                >
+                                    关联项目:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    关联项目:{{ item.program.name }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </el-card>
+            <el-card v-loading="loading" class="task">
+                <div class="taskTitle">
+                    <div>
+                        我的已办任务
+                        <div class="tag">{{ issuesClosedLists }}</div>
+                    </div>
+                    <div class="viewMore">
+                        <span @click="seeMore">查看更多>></span>
+                    </div>
+                </div>
+                <div
+                    v-loading="loading"
+                    class="nodata"
+                    v-if="havefinishedTaskLists.length == 0"
+                >
+                    暂无数据
+                </div>
+                <div v-else>
+                    <div
+                        class="taskItem"
+                        v-for="(item, index) in havefinishedTaskLists"
+                        :key="index"
+                    >
+                        <div @click="enterDetail(item.htmlUrl)">
+                            <div class="taskItemTitle">
+                                <div>
+                                    <div class="number">{{ index + 1 }}</div>
+                                    <!-- <div class="circle"></div> -->
+                                    <div class="taskItemName">
+                                        {{ item.title }}
+                                        <span>[{{ item.issueType }}]</span>
+                                    </div>
+                                </div>
+                                <div>{{ item.createdAt }}</div>
+                            </div>
+                            <div class="taskInfo">
+                                <span
+                                    v-if="item.user == null || item.user == ''"
+                                    class="taskInfoItem"
+                                >
+                                    创建人:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    创建人:{{ item.user.name }}
+                                </span>
+                                <span
+                                    v-if="
+                                        item.assignee == null ||
+                                        item.assignee == ''
+                                    "
+                                    class="taskInfoItem"
+                                >
+                                    负责人:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    负责人:{{ item.assignee.name }}
+                                </span>
+                                <span
+                                    v-if="
+                                        item.program == null ||
+                                        item.program == ''
+                                    "
+                                    class="taskInfoItem"
+                                >
+                                    关联项目:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    关联项目:{{ item.program.name }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </el-card>
+        </div>  
+         <div class="dashboardInfo">
+            <h2 class="dashboardInfoTitle" v-if="isShow2">统一源代码质量检测平台[管理网]</h2>
+            
+        </div>
+        <!-- <span>严重 #DB2828</span>
+    <span>主要 #4a90e2</span>
+    <span>次要 #00B5AD</span>
+    <span>不重要 #21BA45</span>
+    <span>无优先级 #EFEFEF;</span>-->
+        <!-- <div class="seriousness"></div>严重
+    <div class="main"></div>主要
+    <div class="minor"></div>次要
+    <div class="unimportance"></div>不重要
+    <div class="nopriority"></div>无优先级-->
+        <div class="taskWarp" v-if="isShow2">
+            <el-card v-loading="loading" class="task">
+                <div class="taskTitle">
+                    <div>
+                        我的待办任务
+                        <div class="tag">{{ issuesLists }}</div>
+                    </div>
+                    <div class="viewMore">
+                        <span @click="seeMoretwo">查看更多>></span>
+                    </div>
+                </div>
+                <div class="nodata" v-if="backlogTaskLists.length == 0">
+                    暂无数据
+                </div>
+                <div v-else>
+                    <div
+                        class="taskItem"
+                        v-for="(item, index) in backlogTaskLists"
+                        :key="index"
+                    >
+                        <div @click="enterDetail(item.htmlUrl)">
+                            <div class="taskItemTitle">
+                                <div>
+                                    <div class="number">{{ index + 1 }}</div>
+                                    <!-- <div class="circle"></div> -->
+                                    <div class="taskItemName">
+                                        {{ item.title }}
+                                        <span>[{{ item.issueType }}]</span>
+                                    </div>
+                                </div>
+                                <div>{{ item.createdAt }}</div>
+                            </div>
+                            <div class="taskInfo">
+                                <span
+                                    class="taskInfoItem"
+                                    v-if="item.user == null || item.user == ''"
+                                >
+                                    创建人:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    创建人:{{ item.user.name }}
+                                </span>
+                                <span
+                                    class="taskInfoItem"
+                                    v-if="
+                                        item.assignee == null ||
+                                        item.assignee == ''
+                                    "
+                                >
+                                    负责人:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    负责人:{{ item.assignee.name }}
+                                </span>
+                                <span
+                                    class="taskInfoItem"
+                                    v-if="
+                                        item.program == null ||
+                                        item.program == ''
+                                    "
+                                >
+                                    关联项目:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    关联项目:{{ item.program.name }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </el-card>
+            <el-card v-loading="loading" class="task">
+                <div class="taskTitle">
+                    <div>
+                        我的已办任务
+                        <div class="tag">{{ issuesClosedLists }}</div>
+                    </div>
+                    <div class="viewMore">
+                        <span @click="seeMoretwo">查看更多>></span>
+                    </div>
+                </div>
+                <div
+                    v-loading="loading"
+                    class="nodata"
+                    v-if="havefinishedTaskLists.length == 0"
+                >
+                    暂无数据
+                </div>
+                <div v-else>
+                    <div
+                        class="taskItem"
+                        v-for="(item, index) in havefinishedTaskLists"
+                        :key="index"
+                    >
+                        <div @click="enterDetail(item.htmlUrl)">
+                            <div class="taskItemTitle">
+                                <div>
+                                    <div class="number">{{ index + 1 }}</div>
+                                    <!-- <div class="circle"></div> -->
+                                    <div class="taskItemName">
+                                        {{ item.title }}
+                                        <span>[{{ item.issueType }}]</span>
+                                    </div>
+                                </div>
+                                <div>{{ item.createdAt }}</div>
+                            </div>
+                            <div class="taskInfo">
+                                <span
+                                    v-if="item.user == null || item.user == ''"
+                                    class="taskInfoItem"
+                                >
+                                    创建人:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    创建人:{{ item.user.name }}
+                                </span>
+                                <span
+                                    v-if="
+                                        item.assignee == null ||
+                                        item.assignee == ''
+                                    "
+                                    class="taskInfoItem"
+                                >
+                                    负责人:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    负责人:{{ item.assignee.name }}
+                                </span>
+                                <span
+                                    v-if="
+                                        item.program == null ||
+                                        item.program == ''
+                                    "
+                                    class="taskInfoItem"
+                                >
+                                    关联项目:暂无
+                                </span>
+                                <span v-else class="taskInfoItem">
+                                    关联项目:{{ item.program.name }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </el-card>
+        </div>  
+    </div>  
+</template>
+
+<script>
+import { mapGetters } from 'vuex';
+import adminDashboard from './admin';
+import editorDashboard from './editor';
+import { getIssues, checkFormList } from '@/api/dashboard';
+import { redirectLoginPlatform } from '@/utils/url_utils';
+
+export default {
+    name: 'Dashboard',
+    components: { adminDashboard, editorDashboard },
+    data() {
+        return {
+            isShow1: false,
+            isShow2: false,
+            loading: false,
+            currentRole: 'adminDashboard',
+            backlogTaskLists: [],
+            havefinishedTaskLists: [],
+            url: '',
+            issuesLists: '',
+            issuesClosedLists: ''
+        };
+    },
+    computed: {
+        ...mapGetters(['roles', 'name', 'userPlatform', 'token',''])
+    },
+    created() {
+        this.getIssuesLists();
+        this.getPlatFormList();
+        this.getIssuesClosedLists();
+        if (!this.roles.includes('admin')) {
+            this.currentRole = 'editorDashboard';
+        }
+    },
+    methods: {
+        // 获取未完成任务列表
+        async getIssuesLists() {
+            this.loading = true;
+            try {
+                let res = await getIssues({
+                    state: 0
+                });
+                this.issuesLists = res.length;
+                this.backlogTaskLists = res.splice(0, 5);
+                this.loading = false;
+            } catch (error) {
+                console.log(error);
+                this.loading = false;
+            }
+        },
+        // 获取已完成任务列表
+        async getIssuesClosedLists() {
+            this.loading = true;
+            try {
+                let res = await getIssues({
+                    state: 1
+                });
+                this.issuesClosedLists = res.length;
+                this.havefinishedTaskLists = res.splice(0, 5);
+                this.loading = false;
+            } catch (error) {
+                this.loading = false;
+                console.log(error);
+            }
+        },
+        // 校验子平台
+        async getPlatFormList() {
+            for (let i = 0; i < this.userPlatform.length; i++) {
+                console.log(this.userPlatform[i].source);
+                if (this.userPlatform[i].source == '1') {
+                    this.url = this.userPlatform[i].url;
+                    // console.log(this.url)
+                    this.isShow1 = true;
+                    console.log('this.isShow', this.isShow1);
+
+                }
+                 if (this.userPlatform[i].source == '2') {
+                    this.url = this.userPlatform[i].url;
+                    // console.log(this.url)
+                    this.isShow2 = true;
+                    console.log('this.isShow', this.isShow2);
+                }
+            }
+        },
+        // 跳转更多任务【研发网】
+        async seeMore() {
+            let _url = '';
+            let res = await checkFormList({
+                strUrl: this.url
+            });
+            if (res) {
+                _url = this.url + '/enterprise/dashboard/issues';
+                redirectLoginPlatform(_url, this.token);
+            } else {
+                this.$message.warning('您无跳转链接权限,请联系管理员添加权限');
+            }
+        },
+        // 跳转更多任务【管理网】
+        // async seeMoretwo() {
+        //     let _url = '';
+        //     let res = await checkFormList({
+        //         strUrl: this.url
+        //     });
+        //     if (res) {
+        //         _url = this.url + '/enterprise/dashboard/issues';
+        //         redirectLoginPlatform(_url, this.token);
+        //     } else {
+        //         this.$message.warning('您无跳转链接权限,请联系管理员添加权限');
+        //     }
+        // },
+        // 进入任务详情页
+        enterDetail(url) {
+            redirectLoginPlatform(url, this.token);
+        }
+    }
+};
+</script>
+<style scoped>
+.taskWarp {
+    display: flex;
+}
+.task {
+    margin: 20px;
+    width: 50%;
+}
+.taskTitle {
+    display: flex;
+    justify-content: space-between;
+    border-left: 10px solid #1296db;
+    padding-left: 10px;
+}
+.taskItem {
+    margin-top: 20px;
+    border-bottom: 1px solid #cccccc;
+    padding-bottom: 20px;
+}
+.circle {
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 5px 0 5px;
+}
+.number {
+    display: inline-block;
+}
+.taskItemTitle {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.taskInfo {
+    margin-left: 15px;
+}
+.tag {
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    border-radius: 50%;
+    color: #fff;
+    background: #fe7708;
+    font-size: 12px;
+    text-align: center;
+    display: inline-block;
+}
+/* .status {
+  font-size: 12px;
+  color: #1296db;
+} */
+.seriousness {
+    width: 10px;
+    height: 10px;
+    background-color: #db2828;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 5px 0 5px;
+}
+.main {
+    width: 10px;
+    height: 10px;
+    background-color: #4a90e2;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 5px 0 5px;
+}
+.minor {
+    width: 10px;
+    height: 10px;
+    background-color: #00b5ad;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 5px 0 5px;
+}
+.unimportance {
+    width: 10px;
+    height: 10px;
+    background-color: #21ba45;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 5px 0 5px;
+}
+.nopriority {
+    width: 10px;
+    height: 10px;
+    background-color: #efefef;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 5px 0 5px;
+}
+.viewMore {
+    font-size: 13px;
+}
+.taskInfoItem {
+    margin-right: 20px;
+}
+.taskItemName {
+    display: inline-block;
+}
+.taskItemName > span {
+    font-size: 12px;
+    color: #1296db;
+}
+.nodata {
+    width: 764px;
+    height: 450px;
+    line-height: 450px;
+    text-align: center;
+}
+.dashboardInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.dashboardInfoTitle {
+    margin-left: 20px;
+    display: inline-block;
+    padding: 20px;
+}
+</style>

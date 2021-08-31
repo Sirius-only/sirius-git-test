@@ -1,0 +1,16 @@
+ "auctionItemId": "",
+  "auctionMoney": 0,
+  "id": 0,
+  "sourceId": ""
+
+
+
+
+
+
+  "itemName": "",
+  "certificationType": 0,
+  "certificationNumber": 0,
+  "phone": "",
+  "isPayMoney": 0,
+  "auctionName": "",
